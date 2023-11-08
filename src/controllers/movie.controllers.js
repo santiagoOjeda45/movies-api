@@ -1,8 +1,11 @@
 const catchError = require('../utils/catchError');
 const Movie = require('../models/Movie');
+const Actor = require('../models/Actor');
+const Director = require('../models/Director');
+const Genre = require('../models/Genre');
 
 const getAll = catchError(async(req, res) => {
-    const results = await Movie.findAll();
+    const results = await Movie.findAll({ include: [Actor, Director, Genre] });
     return res.json(results);
 });
 
@@ -34,10 +37,37 @@ const update = catchError(async(req, res) => {
     return res.json(result[1][0]);
 });
 
+const setActorMovies = catchError(async(req, res) => {
+    const { id } = req.params;
+    const movie = await Movie.findByPk(id);
+    await movie.setActors(req.body);
+    const actors = await movie.getActors();
+    return res.json(actors);
+});
+
+const setDirectorMovies = catchError(async(req, res) => {
+    const { id } = req.params;
+    const movie = await Movie.findByPk(id);
+    await movie.setDirectors(req.body);
+    const directors = await movie.getDirectors();
+    return res.json(directors);
+});
+
+const setGenreMovies = catchError(async(req, res) => {
+    const { id } = req.params;
+    const movie = await Movie.findByPk(id);
+    await movie.setGenres(req.body);
+    const genres = await movie.getGenres();
+    return res.json(genres);
+});
+
 module.exports = {
     getAll,
     create,
     getOne,
     remove,
-    update
+    update,
+    setActorMovies,
+    setDirectorMovies,
+    setGenreMovies
 }

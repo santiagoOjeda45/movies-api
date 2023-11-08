@@ -1,8 +1,9 @@
 const catchError = require('../utils/catchError');
 const Actor = require('../models/Actor');
+const Movie = require('../models/Movie');
 
 const getAll = catchError(async(req, res) => {
-    const results = await Actor.findAll();
+    const results = await Actor.findAll({ include: [Movie] });
     return res.json(results);
 });
 
@@ -30,8 +31,16 @@ const update = catchError(async(req, res) => {
         req.body,
         { where: {id}, returning: true }
     );
-    if(result[0] === 0) return res.sendStatus(404);
+    if(result[0] === 0) return res.sendStatus(404); 
     return res.json(result[1][0]);
+});
+
+const setMovieActors = catchError(async(req, res) => {
+    const { id } = req.params;
+    const actor = await Actor.findByPk(id);
+    await actor.setMovies(req.body);
+    const movies = await actor.getMovies();
+    return res.json(movies);
 });
 
 module.exports = {
@@ -39,5 +48,6 @@ module.exports = {
     create,
     getOne,
     remove,
-    update
+    update,
+    setMovieActors
 }
